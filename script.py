@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 import subprocess
-import pefile  # Assurez-vous d'avoir installé cette bibliothèque
+import pefile  # Ensure this library is installed
 
 def calculate_hashes(file_path):
     md5_hash = hashlib.md5()
@@ -19,6 +19,11 @@ def calculate_hashes(file_path):
         return None, None
 
     return md5_hash.hexdigest(), sha256_hash.hexdigest()
+
+def get_file_size(file_path):
+    size_bytes = os.path.getsize(file_path)
+    size_kilobytes = size_bytes / 1024
+    return size_kilobytes, size_bytes
 
 def list_dlls_and_apis(file_path):
     try:
@@ -47,6 +52,10 @@ def get_file_info(file_path):
 
     file_info["MD5"] = md5
     file_info["SHA256"] = sha256
+
+    size_ko, size_bytes = get_file_size(file_path)
+    file_info["Size (KB)"] = size_ko
+    file_info["Size (Bytes)"] = size_bytes
 
     creation_time = os.path.getctime(file_path)
     file_info["Creation Date"] = datetime.fromtimestamp(creation_time).strftime("%d/%m/%Y %H:%M:%S")
