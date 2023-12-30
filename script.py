@@ -20,10 +20,10 @@ def calculate_hashes(file_path):
 
     return md5_hash.hexdigest(), sha256_hash.hexdigest()
 
-def get_file_size(file_path):
+def get_file_size_formatted(file_path):
     size_bytes = os.path.getsize(file_path)
-    size_kilobytes = size_bytes / 1024
-    return size_kilobytes, size_bytes
+    size_kilobytes = size_bytes // 1024  # Integer division for whole number
+    return f"{size_kilobytes} KB ({size_bytes} Bytes)"
 
 def list_dlls_and_apis(file_path):
     try:
@@ -52,10 +52,7 @@ def get_file_info(file_path):
 
     file_info["MD5"] = md5
     file_info["SHA256"] = sha256
-
-    size_ko, size_bytes = get_file_size(file_path)
-    file_info["Size (KB)"] = size_ko
-    file_info["Size (Bytes)"] = size_bytes
+    file_info["Size"] = get_file_size_formatted(file_path)
 
     creation_time = os.path.getctime(file_path)
     file_info["Creation Date"] = datetime.fromtimestamp(creation_time).strftime("%d/%m/%Y %H:%M:%S")
@@ -71,6 +68,16 @@ def get_file_info(file_path):
         file_info["File Type"] = "N/A"
 
     return file_info
+
+def format_as_markdown_table(file_info):
+    markdown_table = "| Key | Value |\n| --- | ----- |\n"
+    for key, value in file_info.items():
+        if key == "DLLs with APIs":
+            apis_info = "\n".join([f"{dll}: " + ", ".join(apis) for dll, apis in value.items()])
+            markdown_table += f"| {key} | {apis_info} |\n"
+        else:
+            markdown_table += f"| {key} | {value} |\n"
+    return markdown_table
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -90,5 +97,8 @@ if __name__ == "__main__":
                         print(f"    {api}")
             else:
                 print(f"{key}: {value}")
+
+        print("\nMarkdown Table Format:\n")
+        print(format_as_markdown_table(file_info))
     else:
         print("Unable to retrieve file information.")
